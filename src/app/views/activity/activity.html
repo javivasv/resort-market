@@ -1,0 +1,59 @@
+<section class="mx-auto max-w-3xl p-6">
+  <div class="flex flex-col">
+    <div class="flex">
+      <a routerLink="/home" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600">
+        &larr; Back to activities
+      </a>
+    </div>
+    <div class="flex pt-3 w-full">
+      @if (loading()) {
+        <div class="flex justify-center py-24 w-full" role="status" aria-label="Loading activity">
+          <div class="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+        </div>
+      } @else if (notFound()) {
+        <div class="flex w-full justify-center">
+          <span class="py-24 text-center text-gray-500">
+            Activity not found.
+          </span>
+        </div>
+      } @else if (activity(); as item) {
+        <div class="flex w-full">
+          <div class="flex flex-col w-full">
+            <div class="h-56 w-full rounded-xl bg-gradient-to-br from-blue-100 to-blue-300"></div>
+            <div class="flex py-2">
+              <span class="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium capitalize text-blue-700">
+                {{ item.category }}
+              </span>
+            </div>
+            <div class="flex py-2">
+              <h1 class="text-3xl font-bold text-gray-900">
+                {{ item.name }}
+              </h1>
+            </div>
+            <div class="flex py-1">
+              <div class="text-sm text-gray-500">
+                <span>
+                  &#9733; {{ item.rating }}
+                </span>
+              </div>
+            </div>
+            <div class="flex py-2">
+              <span class="text-gray-600">
+                {{ item.description }}
+              </span>
+            </div>
+            <div class="flex py-3 items-center justify-between border-t border-gray-200">
+              <span class="text-2xl font-bold text-blue-600">{{ '$' + item.price.toFixed(2) }}</span>
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Book Now
+                </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>

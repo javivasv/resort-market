@@ -31,4 +31,10 @@ export class ActivityService {
       .get<NestResponse<PaginatedData<Activity>>>('/api/activities', { params })
       .pipe(map((res) => res.data));
   }
+
+  getActivityById(id: string): Observable<Activity> {
+    return this.http
+      .get<NestResponse<Activity>>(`/api/activities/${id}`)
+      .pipe(map((res) => res.data));
+  }
 }
