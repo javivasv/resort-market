@@ -1,0 +1,11 @@
+<button
+  type="button"
+  class="rounded-full px-4 py-1.5 text-sm font-medium transition cursor-pointer"
+  [class.bg-blue-600]="selected()"
+  [class.text-white]="selected()"
+  [class.bg-gray-100]="!selected()"
+  [class.text-gray-700]="!selected()"
+  (click)="onClick()"
+>
+  {{ option().label }}
+</button>
