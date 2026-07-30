@@ -13,10 +13,14 @@ export interface CategoryOption {
   styleUrl: './activity-categories.scss',
 })
 export class ActivityCategories {
+  // Inputs
   option = input.required<CategoryOption>();
   selected = input<boolean>(false);
+  
+  // Outputs
   select = output<ActivityCategory | ''>();
 
+  // Methods
   onClick(): void {
     this.select.emit(this.option().value);
   }

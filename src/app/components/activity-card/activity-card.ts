@@ -8,5 +8,6 @@ import { Activity } from '../../../backend-mock/models/activity.model';
   styleUrl: './activity-card.scss',
 })
 export class ActivityCard {
+  // Inputs
   activity = input.required<Activity>();
 }
