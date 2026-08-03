@@ -46,9 +46,11 @@
               <span class="text-2xl font-bold text-blue-600">{{ '$' + item.price.toFixed(2) }}</span>
                 <button
                   type="button"
-                  class="cursor-pointer rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  class="cursor-pointer rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-default disabled:bg-green-600"
+                  [disabled]="justAdded()"
+                  (click)="bookNow(item)"
                 >
-                  Book Now
+                  {{ justAdded() ? 'Added to Cart ✓' : 'Book Now' }}
                 </button>
             </div>
           </div>
