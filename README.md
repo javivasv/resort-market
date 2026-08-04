@@ -1,59 +1,97 @@
 # ResortMarket
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.2.
+A guest-facing shopping experience for a resort: browse rooms, dining, spa, and excursion packages, filter and search them, add selections to a cart, and check out.
 
-## Development server
+The backend is fully mocked on the client — there is no real server or database. All data is hardcoded and served through an HTTP interceptor shaped to mirror a typical NestJS API response, so the app can be developed and deployed entirely standalone.
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
+- **Browse & filter** — category pills, debounced search, and pagination over a catalog of activities
+- **Activity detail pages** — routed by ID, with graceful loading, not-found, and error states
+- **Cart** — add/remove items, adjust quantities, persisted to `localStorage`, with a mock checkout flow
+- **Server-side rendering** — hybrid rendering: static pages are prerendered at build time, the parameterized activity detail route renders on demand
+- **Accessible by default** — keyboard-operable navigation, ARIA labeling on icon-only controls and toggles, visible focus states, and a sane heading hierarchy
+- **Responsive layout** — Tailwind CSS breakpoints across the grid, header, and detail views
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Angular 22 (standalone components, Signals) |
+| Async/state orchestration | RxJS, bridged to Signals via `toSignal`/`toObservable` |
+| Styling | Tailwind CSS v4 |
+| Rendering | Angular SSR (`@angular/ssr`), hybrid prerender/server-render per route |
+| Testing | Vitest (Angular's native unit-test builder) |
+| CI | GitHub Actions |
+| Hosting | Vercel |
+
+## Architecture
+
+```
+src/
+  app/
+    components/     # Reusable presentational components (ActivityCard, ActivityCategories)
+    models/          # App-level (client-only) types, e.g. CartItem
+    services/        # ActivityService, CartService
+    views/           # Routed pages: Home, Activity (detail), Cart
+  backend-mock/
+    data/            # Hardcoded activity data
+    interceptors/    # HttpInterceptor simulating a REST API
+    models/          # NestJS-shaped response envelopes (NestResponse, PaginatedData)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+State management follows one consistent pattern throughout: component-local state lives in Signals, anything requiring debouncing, cancellation, or combining multiple sources (search, filters, pagination, retries) is handled by RxJS operators, and the result is bridged back into a Signal for the template to read. Shared state that spans routes (the cart) lives in a Signal-based service instead of a component.
 
-## Code scaffolding
+### The mock backend
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Rather than standing up a real API, an `HttpInterceptor` intercepts requests to `/api/*` and returns hardcoded data wrapped in the same envelope shape a NestJS backend typically returns:
 
-```bash
-ng generate component component-name
+```ts
+{
+  statusCode: 200,
+  message: "Success",
+  data: {
+    items: [...],
+    meta: { totalItems, itemsPerPage, currentPage, totalPages }
+  }
+}
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+This keeps the HTTP client code, typed response models, and error handling identical to what they'd look like against a real backend — only the interceptor would need to be swapped out for real `HttpClient` calls.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js ≥ 22.22.3 (or ≥ 24.15.0 / ≥ 26.0.0)
+- npm
+
+### Install and run
 
 ```bash
-ng generate --help
+npm install
+npm start
 ```
 
-## Building
+Open `http://localhost:4200`.
 
-To build the project run:
+## Available scripts
+
+| Command | Description |
+|---|---|
+| `npm start` | Runs the dev server |
+| `npm run build` | Production build (browser + SSR server bundle) |
+| `npm test` | Runs the unit test suite |
+| `npm run watch` | Development build in watch mode |
+
+## Testing
+
+Unit tests cover services (`ActivityService`, `CartService`), components (including router/HTTP-dependent ones via `provideRouter`/`provideHttpClientTesting`), and the cart's add/remove/update/checkout flows. Run them with:
 
 ```bash
-ng build
+npm test
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Deployment
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Deployed on Vercel, which auto-detects the Angular SSR build and wraps the server bundle as a serverless function. Every push to `main` triggers a production deployment; every pull request gets its own preview URL. A GitHub Actions workflow (`.github/workflows/ci.yml`) runs the test suite and build on every push and PR.
