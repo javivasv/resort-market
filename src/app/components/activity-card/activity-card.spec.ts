@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { ActivityCard } from './activity-card';
 import { Activity } from '../../../backend-mock/models/activity.model';
@@ -20,6 +21,7 @@ describe('ActivityCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ActivityCard],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActivityCard);
