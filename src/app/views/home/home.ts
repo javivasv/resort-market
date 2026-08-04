@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { combineLatest, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, of, switchMap, tap } from 'rxjs';
 import { ActivityService } from '../../services/activity.service';
 import { ActivityCategory } from '../../../backend-mock/models/activity.model';
 import { ActivityCard } from '../../components/activity-card/activity-card';
@@ -35,19 +35,30 @@ export class Home {
   protected readonly search = signal('');
   protected readonly page = signal(1);
   private readonly loadingState = signal(false);
+  private readonly errorState = signal(false);
+  private readonly retryTrigger = signal(0);
 
   // Observables
   private readonly category$ = toObservable(this.category);
   private readonly search$ = toObservable(this.search).pipe(debounceTime(300), distinctUntilChanged());
   private readonly page$ = toObservable(this.page);
+  private readonly retry$ = toObservable(this.retryTrigger);
 
   protected readonly result = toSignal(
-    combineLatest([this.category$, this.search$, this.page$]).pipe(
-      tap(() => this.loadingState.set(true)),
+    combineLatest([this.category$, this.search$, this.page$, this.retry$]).pipe(
+      tap(() => {
+        this.loadingState.set(true);
+        this.errorState.set(false);
+      }),
       switchMap(([category, search, page]) =>
-        this.activityService
-          .getActivities({ category, search, page })
-          .pipe(tap(() => this.loadingState.set(false)))
+        this.activityService.getActivities({ category, search, page }).pipe(
+          tap(() => this.loadingState.set(false)),
+          catchError(() => {
+            this.loadingState.set(false);
+            this.errorState.set(true);
+            return of(undefined);
+          })
+        )
       )
     ),
     { initialValue: undefined }
@@ -55,6 +66,7 @@ export class Home {
 
   // Readonly
   protected readonly loading = this.loadingState.asReadonly();
+  protected readonly error = this.errorState.asReadonly();
 
   // Computed properties
   protected readonly pages = computed(() =>
@@ -74,5 +86,9 @@ export class Home {
 
   protected goToPage(page: number): void {
     this.page.set(page);
+  }
+
+  protected retry(): void {
+    this.retryTrigger.update((value) => value + 1);
   }
 }

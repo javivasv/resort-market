@@ -28,6 +28,17 @@
     <div class="flex justify-center py-12" role="status" aria-label="Loading activities">
       <div class="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
     </div>
+  } @else if (error()) {
+    <div class="flex flex-col items-center gap-4 py-24 text-center" role="alert">
+      <p class="text-gray-500">There was an error, reload the page.</p>
+      <button
+        type="button"
+        class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+        (click)="retry()"
+      >
+        Reload
+      </button>
+    </div>
   } @else if (result(); as res) {
     @if (res.items.length === 0) {
       <p class="text-gray-500">No activities match your filters.</p>
